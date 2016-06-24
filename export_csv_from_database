@@ -1,0 +1,56 @@
+$filename = "toy_csv.csv";
+$fp = fopen('php://output', 'w');
+
+header('Content-type: application/csv');
+header('Content-Disposition: attachment; filename='.$filename);
+
+$header = array('date_submitted',
+                'full_legal_business_name',
+                'trading_address_line_1',
+                'trading_address_line_2',
+                'suburb',
+                'state',
+                'postcode',
+                'phone',
+                'description',
+                'mcc',
+                'transactions_per_month',
+                'average_sale_amount',
+                'incorporation_status',
+                'business_registration_number',
+                'registered_for_gst',
+                'contact_full_name',
+                'contact_phone',
+                'contact_dob',
+                'user_first_name',
+                'user_last_name',
+                'user_email',
+                'bank_bsb',
+                'bank_account_number',
+                'bank_account_name',
+                'terms_conditions',
+                'referrer_code',
+                'api_key_secret',
+                'api_key_publishable'
+);
+
+fputcsv($fp, $header);
+
+/*
+ *Add databas array here 
+ *
+ ***/
+
+  $list = array (
+    array('aaa', 'bbb', 'ccc', 'dddd'),
+    array('123', '456', '789'),
+    array('"aaa"', '"bbb"')
+);
+
+///$fp = fopen('file.csv', 'w');
+
+foreach ($list as $fields) {
+    fputcsv($fp, $fields);
+}
+
+fclose($fp);
