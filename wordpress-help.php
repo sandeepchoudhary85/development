@@ -142,3 +142,65 @@ function topheadermenu(){
 
 
 
+
+/************************ Custom Add Mata Box ****************/
+
+
+///// Add Related metabox for Resources post type
+
+
+function resources_add_custom_box_for_related_post()
+{
+    $screens = ['resources', 'wporg_cpt'];
+    foreach ($screens as $screen) {
+        add_meta_box(
+            'resources_related_box_id',           // Unique ID
+            'Related Resource Type',  // Box title
+            'resources_add_custom_box_for_related_post_custom_box_html',  // Content callback, must be of type callable
+            $screen,                   // Post type
+            'side'
+        );
+    }
+}
+add_action('add_meta_boxes', 'resources_add_custom_box_for_related_post');
+
+function resources_add_custom_box_for_related_post_custom_box_html(){
+
+	?>
+<ul class="tagchecklist" role="list">
+	
+</ul>
+<select class="mdb-select md-form" searchable="Search here..">
+  <option value="" disabled selected>Choose your country</option>
+  <option value="1">USA</option>
+  <option value="2">Germany</option>
+  <option value="3">France</option>
+  <option value="3">Poland</option>
+  <option value="3">Japan</option>
+</select>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var count = 0;
+		$('.mdb-select').on('change' ,  function(){
+
+			var getvalue = jQuery(this).val();
+			var getpostname = jQuery(".mdb-select :selected").text();
+			
+			jQuery('.tagchecklist').append('<li><button type="button" id="post_tag-check-num-'+count+'" class="ntdelbutton"><span class="remove-tag-icon" aria-hidden="true"></span><span class="screen-reader-text">Remove term: '+getpostname+'</span></button>'+getpostname+'</li>');
+	 count++;
+		});
+
+///// Remove cli8ck 
+		jQuery(document).on('click' , '.remove-tag-icon' ,  function(){
+
+			jQuery(this).parent().parent('li').remove();
+		})
+
+	});
+</script>
+    <?php
+}
+
+/************************ Custom Add Mata Box ****************/
+
+
