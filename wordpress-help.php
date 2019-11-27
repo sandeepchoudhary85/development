@@ -164,20 +164,44 @@ function resources_add_custom_box_for_related_post()
 }
 add_action('add_meta_boxes', 'resources_add_custom_box_for_related_post');
 
-function resources_add_custom_box_for_related_post_custom_box_html(){
+function resources_add_custom_box_for_related_post_custom_box_html($post){
+
+$value = get_post_meta($post->ID, '_related_resources_meta_key', true);
+$splitthevalue = explode(',', $value);
+//echo "<pre>"; print_r($value);
+$count = 0;
+	foreach ($splitthevalue as $key => $splitthevaluevalue) {
+		
+		$title = str_replace(["-", "–"], ' ', $splitthevaluevalue);//sanitize_title($splitthevaluevalue);
+
+   $liiiii .= '<li><button type="button" id="post_tag-check-num-'.$count.'" class="ntdelbutton"><span alt="'.$splitthevaluevalue.'" class="remove-tag-icon" aria-hidden="true"></span><span class="screen-reader-text">Remove term: '.$title.'</span></button>'.$title.'</li>';
+	$count++;
+	}
 
 	?>
 <ul class="tagchecklist" role="list">
-	
+	<?php echo $liiiii;?>
 </ul>
 <select class="mdb-select md-form" searchable="Search here..">
-  <option value="" disabled selected>Choose your country</option>
-  <option value="1">USA</option>
-  <option value="2">Germany</option>
-  <option value="3">France</option>
-  <option value="3">Poland</option>
-  <option value="3">Japan</option>
+  <option value="" selected>Choose Resource Type </option>
+  <?php $args = array(
+                   'taxonomy' => 'resourcescat',
+                   'orderby' => 'name',
+                   'order'   => 'ASC',
+                   'hide_empty' => FALSE
+               );
+
+       $allcategor = get_categories($args);
+       foreach ($allcategor as $key => $allcategorvalue) :
+       		foreach ($splitthevalue as $key => $splitthevaluevalue) { 
+
+       			if($allcategorvalue->slug == $splitthevaluevalue){ $classattr = 'disabled' ;} else{$classattr = '';}
+       		}
+       	echo '<option '.$classattr.' value="'.$allcategorvalue->slug.'">'.$allcategorvalue->name.'</option>';
+       endforeach;
+  ?>
 </select>
+<input type="text" name="resources_related_value" id="resources_related_value" value="">
 <script type="text/javascript">
 	$(document).ready(function() {
 		var count = 0;
@@ -185,8 +209,18 @@ function resources_add_custom_box_for_related_post_custom_box_html(){
 
 			var getvalue = jQuery(this).val();
 			var getpostname = jQuery(".mdb-select :selected").text();
+
+			var getselectedvalues = jQuery('#resources_related_value').val();
+
+			var addcommasaporatedvalues = (!getselectedvalues) ? getvalue : getselectedvalues + ',' + getvalue;
+
+			jQuery('#resources_related_value').val(addcommasaporatedvalues);
+
+
+			jQuery(".mdb-select :selected").addClass('disabled');
+			jQuery(".mdb-select :selected").attr('disabled' , 'disabled');
 			
-			jQuery('.tagchecklist').append('<li><button type="button" id="post_tag-check-num-'+count+'" class="ntdelbutton"><span class="remove-tag-icon" aria-hidden="true"></span><span class="screen-reader-text">Remove term: '+getpostname+'</span></button>'+getpostname+'</li>');
+			jQuery('.tagchecklist').append('<li><button type="button" id="post_tag-check-num-'+count+'" class="ntdelbutton"><span alt="'+getvalue+'" class="remove-tag-icon" aria-hidden="true"></span><span class="screen-reader-text">Remove term: '+getpostname+'</span></button>'+getpostname+'</li>');
 	 count++;
 		});
 
@@ -194,11 +228,54 @@ function resources_add_custom_box_for_related_post_custom_box_html(){
 		jQuery(document).on('click' , '.remove-tag-icon' ,  function(){
 
 			jQuery(this).parent().parent('li').remove();
+			var getremovedvalue = jQuery(this).attr('alt');
+			//alert(getremovedvalue);
+		jQuery(".mdb-select").val(getremovedvalue).find("option[value=" + getremovedvalue +"]").removeAttr('disabled', true);
+
+
+				var getvaluesforremove = jQuery('#resources_related_value').val();
+				var strArray = getvaluesforremove.split(',');
+	            for (var i = 0; i < strArray.length; i++) {
+
+	                if (strArray[i] === getremovedvalue) {
+
+	                    strArray.splice(i, 1);
+
+	                }
+
+	            }
+	            jQuery('#resources_related_value').val(strArray);
+				//alert(strArray);
+
 		})
 
 	});
 </script>
     <?php
+
+
+}
+if($_POST['post_type'] == 'resources'){
+
+ //echo "<pre>"; print_r($_POST);
+
+ //echo $_POST['resources_related_value'];
+ function related_resources_save_postdata($post_id)
+	{
+	    if (array_key_exists('resources_related_value', $_POST)) {
+	        update_post_meta(
+	            $post_id,
+	            '_related_resources_meta_key',
+	            $_POST['resources_related_value']
+	        );
+	    }
+	}
+add_action('save_post', 'related_resources_save_postdata');
+
+
+
+  //die;
+
 }
 
 /************************ Custom Add Mata Box ****************/
