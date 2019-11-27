@@ -280,4 +280,25 @@ add_action('save_post', 'related_resources_save_postdata');
 
 /************************ Custom Add Mata Box ****************/
 
+/****************************** Get Post accord8ing to category slgug or custome post type custom textononmy ******************/
 
+                    $category = get_queried_object();
+						//print_r($category);
+						$cat_id =  $category->name;
+						$termID = $category->term_id;
+						$slug = $category->slug;
+						$description = $category->description;
+                      		 $args = array(
+				                    'posts_per_page'   => -1,
+				                    'post_type'        => 'resources',
+				                    'tax_query' => array( 
+				                            array(
+				                                'taxonomy' => 'resourcescat', // Taxonomy, in my case I need default post categories
+				                                'field'    => 'slug',
+				                                'terms'    => $slug, // Your category slug (I have a category 'interior')
+				                            ),
+				                        )  
+				                );
+                    		 $the_query = new WP_Query( $args );
+
+/****************************** Get Post accord8ing to category slgu ******************/
