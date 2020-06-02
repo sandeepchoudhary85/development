@@ -1,0 +1,17 @@
+CREATE USER 'mltinetdbuser'@'localhost' IDENTIFIED BY '!@#$multinetuat!@#$!!@#$';
+
+GRANT ALL PRIVILEGES ON * . * TO 'mltinetdbuseruat'@'localhost';
+
+FLUSH PRIVILEGES;
+
+GRANT ALL PRIVILEGES ON multinet_tr_uat.* To 'mltinetdbuseruat'@'hostname' IDENTIFIED BY '!@#$multinetuat!@#$!!@#$';
+
+
+
+ Grants for mltinetdbuseruat@localhost             
+ GRANT USAGE ON *.* TO 'mltinetdbuseruat'@'localhost' IDENTIFIED BY PASSWORD '!@#$multinetuat!@#$!!@#$' 
+ GRANT ALL PRIVILEGES ON * . * TO 'mltinetdbuseruat'@'localhost'
+
+GRANT CREATE ON *.* TO 'mltinetdbuseruat'@'localhost';
+
+SHOW GRANTS FOR 'mltinetdbuseruat'@'localhost'
