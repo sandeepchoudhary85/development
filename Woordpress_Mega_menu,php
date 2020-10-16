@@ -1,0 +1,247 @@
+<?php
+
+              $parent = array();
+              $childarray = array();
+              $menu_name = 'mega';
+              if (($locations = get_nav_menu_locations()) && isset($locations[$menu_name]))
+              {
+                $menu = wp_get_nav_menu_object($locations[$menu_name]);
+                $menu_items = wp_get_nav_menu_items($menu->term_id);
+               
+                $parent_id = 0;
+                $level2 = 0;
+                $l2 = 0;
+                
+                //echo "<pre>";print_r($menu_items);
+                foreach((array)$menu_items as $key => $menu_item)
+                {
+                  //$l2 = 0;
+
+                  if($menu_item->menu_item_parent == 0)
+                  { 
+
+                    $parent_id = $menu_item->db_id;
+                    $title = $menu_item->title;
+                    $url = $menu_item->url;
+                    $image = $menu_item->description;
+                    array_push($parent, array("title" => $title, "url" => $url, "child" => array() ,"image" => $image));
+                  }
+                  else if($menu_item->menu_item_parent == $parent_id)
+                  {  $l2++;
+                    $title = $menu_item->title;
+                    $url = $menu_item->url;                    
+                    $level2 = $menu_item->db_id;
+                    //echo $image = "==>";
+                    $childarray = [array("title" => $title, "url" => $url)];
+                    array_push($parent[count($parent) - 1]["child"], array("title" => $title, "url" => $url,'subchild' => $level2 ));
+                  }
+                  else if($menu_item->menu_item_parent == $level2)
+                  {
+                    $title1 = $menu_item->title;
+                    $url1 = $menu_item->url;
+                   
+                     //print_r($childarray);
+                    
+                    //array_push($parent[count($parent) - 1]["child"]['0']['submenu'][], array("title" => $title1, "url" => $url1));
+                    
+                  // $parent[count($parent) - 1]["child"]['submenu'] = array("title" => $title, "url" => $url);
+                    //$parent[count($parent) - 1]["child"][$level2]['subchild'][] = array("title" => $title, "url" => $url);
+                    $level3child[$level2][] = array("title" => $title1, "url" => $url1);
+                   $l2++; 
+                  }
+                  else{}
+
+                }
+              }
+    ?>
+<ul class="nav megamenuul">
+            <?php
+            //echo "<pre>"; print_r($level3child);
+            //echo "<pre>"; print_r($parent);
+             foreach ($level3child as $key => $level3childvalue) {
+               //echo $key;
+             }
+
+              foreach ($parent as $key => $value)
+              {
+                if(empty($value["child"]))
+                {
+                  echo "<li class='megalistyle'><a href='" . $value["url"] . "'>" . $value["title"] . "</a></li>";
+                }
+                else
+                { $getimage = $value["image"];
+                  echo '<li class="dropdown megalistyle"><a href="' . $value["url"] . '" class="dropdown-toggle" data-toggle="dropdown">' . $value["title"] . ' <b class="caret"></b></a><ul class="dropdown-menu mega-menu">';
+                  foreach ($value["child"] as $key => $values)
+                  { 
+                    if($values["title"]){
+                     echo  '<li class="mega-menu-column">';
+                     echo  '<ul class="level3menu">';
+                     echo  '<li class="nav-header">' . $values["title"] . '</li>';    
+
+                     
+                      //echo "==>".$values['subchild'];
+                  foreach ($level3child as $key =>  $valuesubchild){
+                        if($key == $values['subchild'])
+                            {
+                               foreach ($level3child[$key] as $key => $value3l) {
+
+                                  echo "<li><a href='" . $value3l["url"] . "'>" . $value3l["title"] . "</a></li>";
+                               }
+
+                            }
+
+                          
+                        } 
+                                      
+
+                        echo "</ul></li>";
+                      }
+                  }
+ 
+
+                  echo '<li class="megamenuimagesection"><img  src="'.$getimage.'" ></li></ul></li>';
+                }
+              }
+            ?>
+</ul>
+
+<style>
+/* page style */
+
+
+
+
+
+
+
+
+/* MEGA MENU STYLE
+********************************/ 
+.nav.megamenuul {
+  margin-bottom: 2%;
+}
+.nav.megamenuul .megalistyle{
+  margin: 1px -1px;
+display: inline-block;
+font-weight: 500;
+padding: 10px 21px;
+background: #dadadb;
+font-size: 1.125em;
+margin-left: 3px;
+
+}
+
+.nav.megamenuul .megalistyle a{
+text-decoration: none;
+color: black;
+}
+
+.mega-menu {
+  padding: 10px 0px ! important;
+  width: 540px;
+  border-radius: 0;
+  margin-top: 0px;
+}
+
+.mega-menu li {
+  display: inline-block;
+  float: left;
+  font-size: 0.94rem;
+  padding: 3px 0px;
+}
+
+.mega-menu li.mega-menu-column {
+  margin-right: 20px;
+  width: 150px;
+}
+
+.mega-menu .nav-header {
+  padding: 0 !important;
+  margin-bottom: 10px;
+  display: inline-block;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+}
+
+.mega-menu img { padding-bottom: 10px; }
+
+/* Disable Toggle style
+********************************/  
+
+/* Dropdown Toggle on style */
+
+
+
+.navbar .nav li.dropdown.open > .dropdown-toggle,
+.navbar .nav li.dropdown.active > .dropdown-toggle,
+.navbar .nav li.dropdown.open.active > .dropdown-toggle {
+  background: inherit; /* Set to inherit when using mouse hover to open dropdown */
+  color: inherit;
+}
+
+/* Toggle off style */
+
+
+
+.navbar .nav li.dropdown.open.active > .dropdown-toggle,
+ .navbar .nav > li.dropdown > a:focus {
+  background: inherit;
+  color: inherit;
+}
+
+/* Toggle hover */
+
+
+
+.navbar .nav li.dropdown > .dropdown-toggle:hover,
+ .navbar .nav li.dropdown.open > .dropdown-toggle:hover { background-color: #DDDDDD; }
+
+/* Toggle caret*/
+
+
+
+.navbar .nav li.dropdown > .dropdown-toggle .caret { border-bottom-color:;
+ border-top-color:;
+}
+
+/* Toggle caret hover */
+
+
+
+.navbar .nav li.dropdown > a:hover .caret,
+ .navbar .nav li.dropdown > a:focus .caret {
+  border-bottom-color: #333;
+  border-top-color: #333;
+}
+
+/* Toggle caret active */
+
+
+
+.navbar .nav li.dropdown.open > .dropdown-toggle .caret,
+ .navbar .nav li.dropdown.active > .dropdown-toggle .caret,
+ .navbar .nav li.dropdown.open.active > .dropdown-toggle .caret {
+  border-bottom-color: #333;
+  border-top-color: #333;
+}
+
+/* Hover style
+********************************/ 
+
+
+
+.navbar .nav > li > a,
+.mega-menu a {
+  -webkit-transition: all 200ms ease;
+  -moz-transition: all 200ms ease;
+  -ms-transition: all 200ms ease;
+  -o-transition: all 200ms ease;
+  transition: all 200ms ease;
+  /* -webkit-transform: translate3d(0, 0, 0); Webkit Hardware Acceleration*/ 
+  -webkit-backface-visibility: hidden; /* Safari Flicker Fix #2 */
+  -webkit-transform: translateZ(0);
+}
+.midnav .nav .dropdown {
+  padding: 10px 23px;
+}
+</style>
