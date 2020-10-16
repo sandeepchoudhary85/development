@@ -104,7 +104,16 @@
               }
             ?>
 </ul>
-
+<script>
+// Dropdown Menu Fade    
+jQuery(document).ready(function(){
+    jQuery(".dropdown").hover(
+        function() { jQuery('.dropdown-menu', this).fadeIn("fast");
+        },
+        function() { jQuery('.dropdown-menu', this).fadeOut("fast");
+    });
+});
+</script>
 <style>
 /* page style */
 
