@@ -1,31 +1,79 @@
-<?php 
-
 global $wpdb;
-
+//echo "<pre>";print_r($_REQUEST);
    $querycounter = 1;
   foreach ($_REQUEST['advanceajaxsearchformdata'] as $key => $value) {
           
           $metakey   = $value['name'];
+          $metakeyforall  = "'".$value['name']."'";
           $metavalue = "'".$value['value']."'";
+          $forprice = $value['value'];
 
-          $m1m2 = "mt".$querycounter;
+          // if($value['value'] === 'all'){
+
+          // 	$m1m2 = "mt".$querycounter;
+           //	$getalldataquery[] = $metakey;
+          // 	$andconditionforalldata .= "OR ( mt2.`meta_key` = $metakeyforall )";          	
+          // 	$innerjoinforalldata .= "INNER JOIN `wp_postmeta` AS $m1m2 ON ( `wp_posts`.`ID` = $m1m2.`post_id` )";
+
+          // }
+
+          $filtersearch .= " when  $metavalue then m.post_id";
+
+ 
+
+         if($value['value'] != 'all'){
+
+                  $m1m2 = "mt".$querycounter;
          $innerjoin .= "INNER JOIN `wp_postmeta` AS $m1m2 ON ( `wp_posts`.`ID` = $m1m2.`post_id` )";
 
-         if($metakey === 'price' ){
+            if($metakey === 'price' ){
+              $splitprice = explode('-', $forprice);
+              //print_r($splitprice); die;
+              $startprice = $splitprice['0'];
+              $endprice =   $splitprice['1'];
+              //echo (string)$startprice ."===". 'Above';
+              if(trim($startprice , ' ') == 'Above'){
 
-            $andcondition .= "AND ( $m1m2.`meta_value` BETWEEN 0 AND $metavalue )";
+                $pricecompare = " >= $endprice";
+              }
+              else{
+                $pricecompare = "BETWEEN $startprice AND $endprice";
+              }
+
+            $andcondition .= "AND ( $m1m2.`meta_value` $pricecompare AND $m1m2.`meta_key` = $metakeyforall) ";
          }
          else{
 
-            $andcondition .= "AND ( $m1m2.`meta_value` = $metavalue )";
+            $andcondition .= "AND ( $m1m2.`meta_value` = $metavalue  AND $m1m2.`meta_key` = $metakeyforall )";
 
          }
+       }
 
          
           //$genratearray .= "array('relation' => 'AND',array('key' => $metakey, 'value' , $metavalue , 'compare' => 'EXISTS')),";
          $querycounter++;
   }
+  //echo $andcondition;
+//echo "<pre>";print_r($getalldataquery);
+if(!empty($getalldataquery)){
+$wpdb->query('SET SQL_BIG_SELECTS = 1');
+$querystrforgetalldata = "
+   SELECT  case  m.`meta_value`
+        $filtersearch
+    end as ID , m.* from `wp_postmeta` as m where 
+    m.meta_key = 'property_location' 
+    OR m.meta_key = 'type' 
+    OR m.meta_key = 'chambres' 
+    OR m.meta_key = 'surface_habitable' 
+    OR m.meta_key = 'Buy' 
+    OR m.meta_key = 'price'
+ ";
+//echo $querystrforgetalldata;
+ //echo $wpdb->show_errors( true );
 
+//$getpostidsforalldata = $wpdb->get_results($wpdb->prepare( $querystrforgetalldata ) , ARRAY_N  );
+}
+//echo "<pre>"; print_r($getpostidsforalldata); die;
 
 $wpdb->query('SET SQL_BIG_SELECTS = 1');
 $querystr = "
@@ -41,61 +89,42 @@ $querystr = "
         OR `wp_posts`.`post_status` = 'pending' 
         OR `wp_posts`.`post_status` = 'private') 
         
-        GROUP BY `wp_posts`.`ID` ORDER BY `wp_posts`.`menu_order` ,`wp_posts`.`post_date` DESC LIMIT 0, 12
+        GROUP BY `wp_posts`.`ID` ORDER BY `wp_posts`.`menu_order` ,`wp_posts`.`post_date` DESC
  ";
  //echo $wpdb->show_errors( true );
 $getpostids = $wpdb->get_results($querystr, OBJECT);
 $data = $wpdb->get_results($wpdb->prepare( $querystr ) , ARRAY_N  );
 
-  //print_r($data);
+
+ //echo "<pre>"; print_r($data);
   //print_r($getpostids);
 foreach ($data as $key => $valueid) {
-   $filterids .= $valueid[$key].',';
+   $filterids .= $valueid['0'].',';
 }
-  
- //echo $querystr; die;
 
-//echo "<pre>"; print_r($_REQUEST);
-  // foreach ($_REQUEST['advanceajaxsearchformdata'] as $key => $value) {
-          
-  //         $metakey   = $value['name'];
-  //         $metavalue = $value['value'];
+// foreach ($getpostidsforalldata as $key => $valueid) {
+//     if($valueid['0'] != '') { $filterids .= $valueid['0'].',' ; }
+// }
+  //echo "<pre>".$filterids; die;
+ //echo $querystr; 
 
-  //         //$genratearray .= "array('relation' => 'AND',array('key' => $metakey, 'value' , $metavalue , 'compare' => 'EXISTS')),";
 
-  // }
-  //print_r($arrayrelation);  
-  //$genratearraymain =  rtrim($genratearray , ',');
- // echo "==>" . $genratearraymain;die;
 
-$genratearraymain =  rtrim($filterids , ',');
-
+ $genratearraymain =  rtrim($filterids , ',');
+ $genratearraymain = explode("," , $genratearraymain );
+ //echo count($genratearraymain);
+  //echo "<pre>";print_r($genratearraymain );
+$paged = $_REQUEST['page'];
   $args = array(
     'post_type' => 'properties',
-    'post__in' => array( $genratearraymain )
-     // 'meta_query' => array( 
-     //         'relation' => 'AND',
-             
-     //        //$genratearraymain
-     //         array('relation' => 'AND',
-     //             array('key' => 'property_type', 'value' , 'Buy' , 'compare' => 'IN')),
-
-     //          array('relation' => 'AND',
-     //             array('key' => 'property_location', 'value' , 'test' , 'compare' => 'IN')
-     //            ),
-     //          array('relation' => 'AND',
-     //              array('key' => 'type', 'value' , 'Appartement' , 'compare' => 'IN')
-     //           ),
-     //          array('relation' => 'AND',
-     //              array('key' => 'chambres', 'value' , '3' , 'compare' => 'IN')
-     //            ),
-     //          array('relation' => 'AND',
-     //             array('key' => 'surface_habitable', 'value' , '+/-125,00' , 'compare' => 'IN')
-     //            ),
-     //          array('relation' => 'AND',
-     //              array('key' => 'price', 'value' , '100.000' , 'compare' => 'IN')
-     //             )
-     //   )
+    'post__in' =>  $genratearraymain,
+    'posts_per_page' => '10',
+    'paged' => $paged
 );
 //echo "<pre>";print_r($args ); die;
 $testimoniallist = new WP_Query($args);
+//echo $wpdb->last_query;
+//echo "Last SQL-Query: {$testimoniallist->request}"; die;
+
+
+if($testimoniallist->have_posts()) : while($testimoniallist->have_posts()): $testimoniallist->the_post();
