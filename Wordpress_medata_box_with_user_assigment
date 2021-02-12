@@ -1,0 +1,180 @@
+///All Code Add in function.php  with custome post type or user role
+///// Scripts for Auto suggetions met box
+add_action( 'admin_enqueue_scripts', 'rudr_select2_enqueue' );
+function rudr_select2_enqueue(){
+ 
+	wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css' );
+	wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js', array('jquery') );
+ 
+	// please create also an empty JS file in your theme directory and include it too
+	///wp_enqueue_script('mycustom', get_stylesheet_directory_uri() . '/mycustom.js', array( 'jquery', 'select2' ) ); 
+ 
+}
+
+
+
+///// Add Meta Box with user to spesific post
+add_action("admin_init", "users_meta_init");
+
+function users_meta_init(){
+  add_meta_box("users-meta", "Select Dealers for these Documents", "users", "document", "normal", "high");
+}
+
+function users(){
+  global $post;
+    global $wpdb;
+  $custom = get_post_custom($post->ID);
+  $users = $custom["users"][0];
+
+    // prepare arguments
+$user_args  = array(
+// search only for Authors role
+//'role' => 'administrator',
+'role' => 'dealer',
+// order results by display_name
+'orderby' => 'display_name'
+);
+// Create the WP_User_Query object
+$wp_user_query = new WP_User_Query($user_args);
+// Get the results
+$authors = $wp_user_query->get_results();
+// Check for results
+//echo "<pre>"; print_r($authors);
+$resultvariable = $wpdb->get_results("SELECT * FROM `document_AssigntoUser` WHERE `post_id` = $post->ID" , ARRAY_A);
+$html .= '<select id="rudr_select2_tags" name="document_AssigntoUser[]" multiple="multiple" style="width:99%;max-width:25em;">';
+foreach ($resultvariable as $key => $resultvalue) { $checkinarray[] = $resultvalue['user_id'];}
+//print_r($checkinarray);
+foreach ($authors as $key => $value) {
+//   if(!empty($resultvariable)){
+
+//     if(in_array($value->ID, $checkinarray)){
+//       $checked = ' checked';
+//       echo "<label>".$value->user_login."</label><input".$checked." class='fordeselect' type='checkbox' name='document_AssigntoUser[]' value='".$value->ID."'>";
+//     }
+//     else{
+//       $checked = '';
+//       echo "<label>".$value->user_login."</label><input".$checked." class='fordeselect' type='checkbox' name='document_AssigntoUser[]' value='".$value->ID."'>";
+//     }
+// }
+
+//   else {echo "<label>".$value->user_login."</label><input type='checkbox' name='document_AssigntoUser[]' value='".$value->ID."'>"; }    
+
+
+		
+		
+			$selected = ( is_array( $checkinarray ) && in_array( $value->ID, $checkinarray ) ) ? ' selected="selected"' : '';
+			$html .= '<option value="' . $value->ID . '"' . $selected . '>' . $value->user_login . '</option>';
+
+		
+
+ 
+ 
+
+}
+$html .= '<select></p>';
+echo $html;  
+?>
+
+<input type="hidden" name="deselected" id="deselected">
+<script>
+
+
+
+  jQuery(function($){
+	// simple multiple select
+	 $('#rudr_select2_tags').select2();
+	
+	//var $eventSelect = $("#rudr_select2_tags");
+  var val = new Array();
+$('#rudr_select2_tags').on('select2:unselecting', function (e) {
+    var id = e.params.args.data.id; //your id
+    //alert(id);
+    var already = jQuery('#deselected').val();
+    already = already.split(',');
+    //alert(already);
+    val.push(id);
+    if(jQuery.inArray(id, already) != -1) {
+    
+      } else {
+          jQuery('#deselected').val(val);
+      }
+    
+    //alert('Are You Sure ?' + id);
+    //e.preventDefault();
+  // Do something with your id
+});
+
+// $('#rudr_select2_tags').on("select2:unselecting", function(e){
+//          var unselected_value = $('#rudr_select2_tags').val();
+//          alert(unselected_value);
+//          val.push(unselected_value);
+//     }).trigger('change');
+
+// $('#rudr_select2_tags').on("select2:select", function(e){
+//          var unselected_value = $('#rudr_select2_tags').val();
+//         // alert(unselected_value);
+//          val = $.grep(val, function(value) {
+//             return value != unselected_value;
+//           });
+         
+//     }).trigger('change')
+
+
+
+
+
+
+
+});
+</script>
+
+
+<?php
+}
+
+
+// Save Meta Details
+add_action('save_post', 'save_userlist');
+
+function save_userlist(){
+  global $post;
+  global $wpdb;
+  //echo $post->ID;
+ //echo "<pre>"; print_r($_POST); die;
+if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+    return $post->ID;
+}
+ // print_r($_POST['document_AssigntoUser']); die;
+  if($_POST['document_AssigntoUser'])
+  { 
+  foreach ($_POST['document_AssigntoUser'] as $key => $doc) {
+//echo $doc; die;
+    //echo "==>"."SELECT * FROM `document_AssigntoUser` WHERE `post_id` = $post->ID AND `user_id` = $doc"; die;
+    $result = $wpdb->get_results("SELECT * FROM `document_AssigntoUser` WHERE `post_id` = $post->ID AND `user_id` = $doc");
+   //echo $wpdb->num_rows; die;
+  if($wpdb->num_rows == 0){
+      $wpdb->insert('document_AssigntoUser', array(
+          'post_id' => $post->ID,
+          'user_id' => $doc,
+          'url' => '3456734567', // ... and so on
+      ));
+      //update_user_meta($doc, "document_AssigntoUser", $doc);
+    }
+  }
+  //print_r($_POST);
+
+}
+
+  
+      if($_POST['deselected'])
+  { 
+      $explode = explode(',' , $_POST['deselected']);
+      foreach ($explode as $key => $explodevalue) {
+        //$wpdb->DELETE FROM `document_AssigntoUser` WHERE ((`id` = '7') OR (`id` = '8') OR (`id` = '9'))
+        echo 'DELETE  FROM `document_AssigntoUser` WHERE post_id = "'.$post->ID.'" AND user_id = "'.$explodevalue.'"';
+        $wpdb->query('DELETE  FROM `document_AssigntoUser` WHERE post_id = "'.$post->ID.'" AND user_id = "'.$explodevalue.'"');
+      }
+ 
+}
+}
+
