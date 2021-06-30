@@ -1,0 +1,49 @@
+//// Collection template liquid
+ 
+ 
+ {%- for product in collection.products limit: settings.pagination_limit -%}
+       {% if product.available %}
+         {%- include 'product-grid-item' with collection.handle -%}
+    	{% endif %}
+  
+    {%- else -%}
+      <div class="grid__item">
+        <p>{{ 'collections.general.no_matches' | t }}</p>
+      </div>
+    {%- endfor -%}
+    
+
+{% for product in collection.products limit: settings.pagination_limit %}
+    			{% unless product.available %}
+    				<div class="whenproductsaresold" style="display:none">
+    				{% include 'product-grid-item' with collection.handle %}
+   					 </div>
+    			{% endunless %}
+    		{% endfor %}
+
+
+
+
+  $(window).scroll(function () { //alert('11111');
+   		var checkifhtmlexixtt = $('#AjaxinatePagination').text();
+      // alert(checkifhtmlexixtt);
+    
+    //if( $('#AjaxinatePagination').is(':empty') ) {alert('1');}
+   // if( $('#AjaxinatePagination:empty').length ) {alert('2');}
+    //if( !$.trim( $('#AjaxinatePagination').html() ).length ) {alert('3');}
+    //if( $('#AjaxinatePagination').contents().length == 0) {alert('4');}
+    
+   if( !$.trim( $('#AjaxinatePagination').html() ).length ) 
+   { var picksoldproducts = '';
+      $('.whenproductsaresold').each(function(){
+      
+      		//alert($(this).html());
+        	picksoldproducts += $(this).html() ; 
+      });
+    	//alert(picksoldproducts);
+    	$('.whenproductsaresold').remove();
+      if(picksoldproducts){
+          $('#AjaxinateContainer').append(picksoldproducts);
+      }
+    }
+})
