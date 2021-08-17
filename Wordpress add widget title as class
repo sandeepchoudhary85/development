@@ -1,0 +1,34 @@
+if ( ! function_exists( 'wpdocs_filter_dynamic_sidebar_params' ) ) {
+ 
+    add_action( 'dynamic_sidebar_params', 'wpdocs_filter_dynamic_sidebar_params' );
+ 
+    /**
+     * Update widget fields
+     * Filters the parameters passed to a widget’s display callback.
+     */
+    function wpdocs_filter_dynamic_sidebar_params( $params ) {
+        global $wp_registered_widgets;
+        $widget_id        = $params[0]['widget_id'];
+        $widget_obj       = $wp_registered_widgets[ $widget_id ];
+        $widget_opt       = get_option( $widget_obj['callback'][0]->option_name );
+        $widget_num       = $widget_obj['params'][0]['number'];
+        $grid_class       = isset( $widget_opt[ $widget_num ]['column'] ) ? $widget_opt[ $widget_num ]['column'] : '';
+      
+   // echo "<pre>"; print_r($widget_opt); echo "</pre>";
+      //echo $widget_num;
+    //  echo $widget_opt[$widget_num]['title'];
+     
+        // strip out all whitespace
+        $zname_clean = preg_replace('/\s*/', '', $widget_opt[$widget_num]['title']);
+        $zname_clean = preg_replace('/[^A-Za-z0-9\-]/', '', $zname_clean);
+        // convert the string to all lowercase
+        $weidgettitleaasclass = strtolower($zname_clean);
+       
+            
+ 
+            $params[0]['before_widget'] = preg_replace( '/class="/', "class=\"{$grid_class} {$weidgettitleaasclass}", $params[0]['before_widget'], 1 );
+
+ 
+        return $params;
+    }
+}
